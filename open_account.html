@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Open Account</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>🏦 Bank App</h2>
+    <a href="/">🏠 Dashboard</a>
+    <a href="/add_customer">➕ Add Customer</a>
+    <a href="/open_account">💳 Open Account</a>
+    <a href="/deposit">💰 Deposit</a>
+    <a href="/withdraw">🏧 Withdraw</a>
+    <a href="/loan">📄 Loan</a>
+</div>
+
+<div class="main">
+    <div class="form-box">
+        <h2>Open Account</h2>
+
+        <form method="POST">
+            <input type="number" name="customer_id" placeholder="Customer ID" required>
+
+            <select name="account_type">
+                <option value="Savings">Savings</option>
+                <option value="Current">Current</option>
+            </select>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <a href="/" class="btn">⬅ Back</a>
+    </div>
+</div>
+
+</body>
+</html>

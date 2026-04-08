@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            position: fixed;
+            background: #020617;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            color: #38bdf8;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #cbd5f5;
+            text-decoration: none;
+            margin: 10px 0;
+        }
+
+        .sidebar a:hover {
+            color: white;
+        }
+
+        .main {
+            margin-left: 240px;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        /* CARDS */
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+    padding: 20px;
+    border-radius: 12px;
+    flex: 1;
+    color: white;
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+        
+
+        /* SEARCH BOX */
+        .search-box {
+    margin: 20px 0;
+    background: linear-gradient(135deg, #1e3a8a, #0f172a);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.search-box input,
+.search-box select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #3b82f6;   /* blue border */
+    outline: none;
+    background: #1e293b;
+    color: white;
+}
+
+.search-box input::placeholder {
+    color: #94a3b8;
+}
+
+.search-box input:focus,
+.search-box select:focus {
+    border: 1px solid #60a5fa;
+    box-shadow: 0 0 5px #3b82f6;
+}}
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #334155;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            color: #e2e8f0;
+            border-bottom: 1px solid #334155;
+        }
+
+        tr:hover {
+            background: #334155;
+        }
+
+        /* PAGINATION */
+        #pagination {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        #pagination button {
+            padding: 6px 12px;
+            margin: 3px;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+        }
+
+        #pagination button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>🏦 Bank</h2>
+    <a href="/">🏠 Dashboard</a>
+    <a href="/add_customer">➕ Add Customer</a>
+    <a href="/open_account">💳 Open Account</a>
+    <a href="/deposit">💰 Deposit</a>
+    <a href="/withdraw">🏧 Withdraw</a>
+    <a href="/loan">📄 Loan</a>
+    <a href="/charts">📊 Charts</a>
+    
+</div>
+
+<div class="main">
+
+    <div class="header">
+        <h2>Bank Dashboard</h2>
+    </div>
+
+    <!-- ANALYTICS CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Customers</h3>
+            <p>{{ data|length }}</p>
+        </div>
+
+        <div class="card">
+            <h3>💰 Total Deposits</h3>
+            <p>₹ {{ total_deposit }}</p>
+        </div>
+
+        <div class="card">
+            <h3>💸 Total Withdrawals</h3>
+            <p>₹ {{ total_withdraw }}</p>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="search-box">
+
+        <input type="text" id="searchInput"
+               placeholder="Search Name / Email / Account ID..."
+               onkeyup="filterTable()">
+
+        <select id="accountFilter" onchange="filterTable()">
+            <option value="">All Accounts</option>
+            <option value="savings">Savings</option>
+            <option value="current">Current</option>
+        </select>
+
+        <input type="number" id="minBalance" placeholder="Min ₹" onkeyup="filterTable()">
+        <input type="number" id="maxBalance" placeholder="Max ₹" onkeyup="filterTable()">
+
+    </div>
+
+    <!-- TABLE -->
+    <h3>Customer Details</h3>
+
+    <table id="customerTable">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Account ID</th>
+            <th>Type</th>
+            <th>Balance</th>
+        </tr>
+
+        {% for row in data %}
+        <tr>
+            <td>{{ row.customer_id }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.email }}</td>
+            <td>{{ row.account_id if row.account_id else "N/A" }}</td>
+            <td>{{ row.account_type if row.account_type else "N/A" }}</td>
+            <td>₹ {{ row.balance if row.balance else "0" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div id="pagination"></div>
+
+</div>
+
+<script>
+let currentPage = 1;
+let rowsPerPage = 10;
+
+function filterTable() {
+
+    let input = document.getElementById("searchInput").value.toLowerCase().trim();
+    let filter = document.getElementById("accountFilter").value.toLowerCase();
+
+    let minBal = document.getElementById("minBalance").value;
+    let maxBal = document.getElementById("maxBalance").value;
+
+    minBal = minBal ? parseFloat(minBal) : 0;
+    maxBal = maxBal ? parseFloat(maxBal) : Infinity;
+
+    let rows = document.querySelectorAll("#customerTable tr");
+    let visibleRows = [];
+
+    for (let i = 1; i < rows.length; i++) {
+
+        let cols = rows[i].getElementsByTagName("td");
+
+        let name = cols[1].innerText.toLowerCase();
+        let email = cols[2].innerText.toLowerCase();
+        let accountId = cols[3].innerText.toLowerCase();
+        let accountType = cols[4].innerText.toLowerCase();
+        let balance = parseFloat(cols[5].innerText.replace("₹","")) || 0;
+
+        let matchSearch = name.includes(input) || email.includes(input) || accountId.includes(input);
+        let matchAccount = filter === "" || accountType.includes(filter);
+        let matchBalance = balance >= minBal && balance <= maxBal;
+
+        if (matchSearch && matchAccount && matchBalance) {
+            visibleRows.push(rows[i]);
+        }
+    }
+
+    showPage(visibleRows);
+}
+
+function showPage(rows) {
+
+    document.querySelectorAll("#customerTable tr").forEach((row, i) => {
+        if (i !== 0) row.style.display = "none";
+    });
+
+    let start = (currentPage - 1) * rowsPerPage;
+    let end = start + rowsPerPage;
+
+    for (let i = start; i < end && i < rows.length; i++) {
+        rows[i].style.display = "";
+    }
+
+    setupPagination(rows.length);
+}
+
+function setupPagination(totalRows) {
+
+    let pageCount = Math.ceil(totalRows / rowsPerPage);
+    let div = document.getElementById("pagination");
+    div.innerHTML = "";
+
+    let prev = document.createElement("button");
+    prev.innerText = "Prev";
+    prev.onclick = () => { if(currentPage>1){currentPage--;filterTable();}};
+    div.appendChild(prev);
+
+    for (let i = 1; i <= pageCount; i++) {
+        let btn = document.createElement("button");
+        btn.innerText = i;
+        if (i === currentPage) btn.style.fontWeight = "bold";
+        btn.onclick = () => { currentPage=i; filterTable(); };
+        div.appendChild(btn);
+    }
+
+    let next = document.createElement("button");
+    next.innerText = "Next";
+    next.onclick = () => { if(currentPage<pageCount){currentPage++;filterTable();}};
+    div.appendChild(next);
+}
+
+window.onload = filterTable;
+</script>
+
+</body>
+</html>

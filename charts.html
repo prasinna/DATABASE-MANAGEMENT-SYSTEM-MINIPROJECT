@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .chart-container {
+            width: 45%;
+            min-width: 320px;
+            height: 320px;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>📊 Analytics Charts</h2>
+
+<div class="grid">
+    <div class="chart-container">
+        <canvas id="chart1"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="chart2"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="chart3"></canvas>
+    </div>
+</div>
+
+<script>
+// Common options for bar charts
+const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            labels: {
+                color: 'white'
+            }
+        }
+    },
+    scales: {
+        x: {
+            ticks: {
+                color: 'white'
+            },
+            grid: {
+                color: '#334155'
+            }
+        },
+        y: {
+            ticks: {
+                color: 'white'
+            },
+            grid: {
+                color: '#334155'
+            }
+        }
+    }
+};
+
+// Pie Chart: Deposit vs Withdraw
+new Chart(document.getElementById("chart1"), {
+    type: 'pie',
+    data: {
+        labels: {{ labels1 | tojson }},
+        datasets: [{
+            data: {{ values1 | tojson }},
+            backgroundColor: [
+                '#3b82f6',
+                '#22c55e',
+                '#f59e0b',
+                '#ef4444',
+                '#a855f7'
+            ],
+            borderColor: '#0f172a',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'white'
+                }
+            }
+        }
+    }
+});
+
+// Bar Chart: Account Types
+new Chart(document.getElementById("chart2"), {
+    type: 'bar',
+    data: {
+        labels: {{ labels2 | tojson }},
+        datasets: [{
+            label: "Accounts",
+            data: {{ values2 | tojson }},
+            backgroundColor: '#38bdf8'
+        }]
+    },
+    options: commonOptions
+});
+
+// Bar Chart: Top Customers
+new Chart(document.getElementById("chart3"), {
+    type: 'bar',
+    data: {
+        labels: {{ labels3 | tojson }},
+        datasets: [{
+            label: "Top Customers",
+            data: {{ values3 | tojson }},
+            backgroundColor: '#f472b6'
+        }]
+    },
+    options: commonOptions
+});
+</script>
+
+</body>
+</html>
